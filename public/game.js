@@ -1,5 +1,3 @@
-
-
 const config = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
@@ -12,7 +10,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
+      debug: true,
       gravity: { y: 0 },
     },
   },
@@ -35,6 +33,7 @@ function preload() {
 
 function create() {
   this.controls = this.input.keyboard.createCursorKeys()
+
   this.otherPlayers = this.physics.add.group()
   this.socket = io()
 
@@ -78,6 +77,94 @@ function create() {
       this.socket.emit('starCollected')
     }, null, this)
   })
+
+  // Add touch buttons for mobile controls
+  this.leftButton = this.add.image(50, 400, 'keyArrow').setInteractive();
+  this.rightButton = this.add.image(150, 400, 'keyArrow').setInteractive();
+  this.upButton = this.add.image(100, 350, 'keyArrow').setInteractive();
+
+  // Rotate buttons for proper orientation
+  this.leftButton.setRotation(-Math.PI / 2); // Point left
+  this.rightButton.setRotation(Math.PI / 2); // Point right
+  this.upButton.setRotation(0); // Point up
+
+  // Scale buttons to be smaller
+  this.leftButton.setScale(0.5);
+  this.rightButton.setScale(0.5);
+  this.upButton.setScale(0.5);
+
+  // Adjust hitboxes to match the scaled button size
+  this.leftButton.setSize(this.leftButton.width * this.leftButton.scaleX, this.leftButton.height * this.leftButton.scaleY);
+  this.rightButton.setSize(this.rightButton.width * this.rightButton.scaleX, this.rightButton.height * this.rightButton.scaleY);
+  this.upButton.setSize(this.upButton.width * this.upButton.scaleX, this.upButton.height * this.upButton.scaleY);
+
+  // Add input listeners for touch controls
+  this.leftButton.on('pointerdown', () => {
+    this.controls.left.isDown = true;
+    this.leftButton.setAlpha(0.5);
+  });
+  this.leftButton.on('pointerup', () => {
+    this.controls.left.isDown = false;
+    this.leftButton.setAlpha(1);
+  });
+  this.leftButton.on('pointerout', () => {
+    this.controls.left.isDown = false;
+    this.leftButton.setAlpha(1);
+  });
+
+  this.rightButton.on('pointerdown', () => {
+    this.controls.right.isDown = true;
+    this.rightButton.setAlpha(0.5);
+  });
+  this.rightButton.on('pointerup', () => {
+    this.controls.right.isDown = false;
+    this.rightButton.setAlpha(1);
+  });
+  this.rightButton.on('pointerout', () => {
+    this.controls.right.isDown = false;
+    this.rightButton.setAlpha(1);
+  });
+
+  this.upButton.on('pointerdown', () => {
+    this.controls.up.isDown = true;
+    this.upButton.setAlpha(0.5);
+  });
+  this.upButton.on('pointerup', () => {
+    this.controls.up.isDown = false;
+    this.upButton.setAlpha(1);
+  });
+  this.upButton.on('pointerout', () => {
+    this.controls.up.isDown = false;
+    this.upButton.setAlpha(1);
+  });
+
+  // Display hit area size for debugging
+  this.add.graphics()
+    .lineStyle(2, 0xff0000)
+    .strokeRectShape(new Phaser.Geom.Rectangle(
+      this.leftButton.x - this.leftButton.displayWidth / 2,
+      this.leftButton.y - this.leftButton.displayHeight / 2,
+      this.leftButton.displayWidth,
+      this.leftButton.displayHeight
+    ));
+
+  this.add.graphics()
+    .lineStyle(2, 0x00ff00)
+    .strokeRectShape(new Phaser.Geom.Rectangle(
+      this.rightButton.x - this.rightButton.displayWidth / 2,
+      this.rightButton.y - this.rightButton.displayHeight / 2,
+      this.rightButton.displayWidth,
+      this.rightButton.displayHeight
+    ));
+
+  this.add.graphics()
+    .lineStyle(2, 0x0000ff)
+    .strokeRectShape(new Phaser.Geom.Rectangle(
+      this.upButton.x - this.upButton.displayWidth / 2,
+      this.upButton.y - this.upButton.displayHeight / 2,
+      this.upButton.displayWidth,
+      this.upButton.displayHeight
+    ));
 }
 
 function update() {
