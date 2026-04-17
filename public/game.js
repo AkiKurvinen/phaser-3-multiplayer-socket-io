@@ -4,7 +4,11 @@ const config = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
   width: 800,
-  height: 800,
+  height: 450,
+  scale: {
+    mode: Phaser.Scale.FIT, // Ensures the game scales to fit the div
+    autoCenter: Phaser.Scale.CENTER_BOTH // Centers the game in the div
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -25,6 +29,8 @@ function preload() {
   this.load.image('ship', 'assets/spaceShips_001.png')
   this.load.image('otherPlayer', 'assets/enemyBlack5.png')
   this.load.image('star', 'assets/star_gold.png')
+  this.load.image('keyArrow', 'assets/arrow_key.png')
+  this.load.image('keyBall', 'assets/ball_key.png')
 }
 
 function create() {
@@ -39,15 +45,15 @@ function create() {
         : addOtherPlayers(this, players[id])
     })
   })
-  
+
   this.socket.on('newPlayer', player => addOtherPlayers(this, player))
   this.socket.on('disconnect', playerId => {
     this.otherPlayers.getChildren().forEach(oPlayer => {
       playerId === oPlayer.playerId
-        oPlayer.destroy()
+      oPlayer.destroy()
     })
   })
-  
+
   this.socket.on('playerMoved', player => {
     this.otherPlayers.getChildren().forEach(oPlayer => {
       if (player.playerId === oPlayer.playerId) {
@@ -56,7 +62,7 @@ function create() {
       }
     })
   })
- 
+
   this.blueScoreText = this.add.text(16, 16, '', { fontSize: '32px', fill: 'blue' })
   this.redScoreText = this.add.text(584, 16, '', { fontSize: '32px', fill: 'red' })
 
@@ -99,13 +105,13 @@ function update() {
     }
 
     if (this.ship.oldPosition && (
-      pos.x !== this.ship.oldPosition.x || 
+      pos.x !== this.ship.oldPosition.x ||
       pos.y !== this.ship.oldPosition.y ||
-      pos.rotation !== this.ship.oldPosition.rotation 
-    )) {    
+      pos.rotation !== this.ship.oldPosition.rotation
+    )) {
       this.socket.emit('playerMovement', pos)
     }
-    
+
     // save old position data
     this.ship.oldPosition = pos
   }
