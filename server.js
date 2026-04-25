@@ -9,6 +9,7 @@ const io = new Server(server, {
   }
 });
 
+const GAMESIZE = { width: 800, height: 450 }
 const PORT = process.env.PORT || 8080
 
 app.use(express.static(`${__dirname}/public`))
@@ -19,22 +20,28 @@ server.listen(PORT, () => console.log(`Server listening at http://localhost:${PO
 
 const players = {}
 const star = {
-  x: Math.floor(Math.random() * 700) + 50,
-  y: Math.floor(Math.random() * 500) + 50,
+  x: Math.floor(Math.random() * GAMESIZE.width) + 50,
+  y: Math.floor(Math.random() * GAMESIZE.height) + 50,
 }
 const scores = {
   blue: 0,
   red: 0
 }
-
+let lastTeam = 'blue';
 io.on('connection', socket => {
   console.log(`${socket.id} connected`)
+  const { username, color } = socket.handshake.query;
+  console.log(`Player connected: ${username}, Color: ${color}`);
+  const team = lastTeam === 'blue' ? 'red' : 'blue';
+  lastTeam = team;
   players[socket.id] = {
     rotation: 0,
-    x: Math.floor(Math.random() * 700) + 50,
-    y: Math.floor(Math.random() * 500) + 50,
+    x: Math.floor(Math.random() * GAMESIZE.width) + 50,
+    y: Math.floor(Math.random() * GAMESIZE.height) + 50,
     playerId: socket.id,
-    team: (Math.floor(Math.random() * 2) == 0 ? 'red' : 'blue'),
+    team: team,
+    username: username,
+    color: color
   }
   // send players obj to the new player
   socket.emit('currentPlayers', players)
@@ -61,11 +68,24 @@ io.on('connection', socket => {
   })
 
   socket.on('starCollected', () => {
-    console.log(players[socket.id].team + 'collected star')
+    console.log(players[socket.id].team + ' collected star')
     scores[players[socket.id].team] += 10
-    star.x = Math.floor(Math.random() * 700) + 50
-    star.y = Math.floor(Math.random() * 500) + 50
+    star.x = Math.floor(Math.random() * GAMESIZE.width) + 50
+    star.y = Math.floor(Math.random() * GAMESIZE.height) + 50
     io.emit('starLocation', star)
     io.emit('scoreUpdate', scores)
   })
+
+  socket.on('colorChange', data => {
+    // Update the player's color on the server
+    if (players[socket.id]) {
+      players[socket.id].color = data.color;
+
+      // Broadcast the color update to all other players
+      socket.broadcast.emit('playerColorUpdate', {
+        playerId: socket.id,
+        color: data.color
+      });
+    }
+  });
 })
