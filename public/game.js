@@ -38,6 +38,7 @@ const default_colors = ['#ff0000', '#0000ff', '#00ff00', '#ffff00', '#c000c0']
 const urlParams = new URLSearchParams(window.location.search);
 const username = urlParams.get('username') || default_usernames[Math.floor(Math.random() * default_usernames.length)];
 let color = urlParams.get('color') || default_colors[Math.floor(Math.random() * default_colors.length)];
+const lobby = urlParams.get('lobby') || 'default';
 
 function create() {
   this.controls = this.input.keyboard.createCursorKeys()
@@ -48,7 +49,8 @@ function create() {
   this.socket = io('http://localhost:8080', {
     query: {
       username,
-      color
+      color,
+      lobby
     }
   });
   setupSocketActions(this)

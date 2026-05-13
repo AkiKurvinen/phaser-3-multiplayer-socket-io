@@ -63,8 +63,8 @@ function addPlayer(game, player) {
     game.ship.preFX.addGlow(glowColor.color, 4, 2, false);
     game.socket.emit('colorChange', { color: glowColor.color });
     game.playerColorLabel.fillStyle(glowColor.color, 1);
-    game.playerColorLabel.fillRect(292, 26, 50, 10);
-    game.playerNameLabel.setText(player.username);
+    game.playerColorLabel.fillRect(240, 26, 50, 10);
+    game.playerNameLabel.setText(`${player.username} (${player.lobby})`);
 }
 
 function addOtherPlayers(game, oPlayer) {
